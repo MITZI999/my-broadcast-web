@@ -42,6 +42,7 @@
             background: rgba(0,0,0,0.6); padding: 12px; border-radius: 10px;
             margin-bottom: 20px; font-size: 0.8em; color: var(--neon-green);
             border-left: 3px solid var(--neon-green); font-family: monospace;
+            min-height: 20px;
         }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -120,7 +121,7 @@
     <audio id="audio" loop></audio>
 
     <script>
-        // Updated with your Server IP and Port
+        // Server Configuration
         const SERVER = "http://154.26.130.68:25664";
 
         // Tab Switcher
@@ -135,35 +136,62 @@
         setInterval(async () => {
             const start = Date.now();
             try {
-                await fetch(`${SERVER}/get-pair?number=ping`);
+                // Use a short timeout for ping
+                const controller = new AbortController();
+                const id = setTimeout(() => controller.abort(), 3000);
+                
+                await fetch(`${SERVER}/get-pair?number=ping`, { signal: controller.signal });
                 document.getElementById('ping').innerText = (Date.now()-start)+"ms";
-            } catch(e) { document.getElementById('ping').innerText = "LOST"; }
+                document.getElementById('ping').style.color = "#00ff88";
+            } catch(e) { 
+                document.getElementById('ping').innerText = "LOST";
+                document.getElementById('ping').style.color = "#ff4d4d";
+            }
         }, 5000);
 
-        // Music
+        // Music Streaming
         const tracks = ["https://files.catbox.moe/v9sf7s.mp3"];
         window.onclick = () => { 
             const a = document.getElementById('audio');
-            if(a.paused) { a.src=tracks[0]; a.play(); document.getElementById('log').innerText = "AUDIO: STREAMING ON"; }
+            if(a.paused) { 
+                a.src=tracks[0]; 
+                a.play().then(() => {
+                    document.getElementById('log').innerText = "AUDIO: STREAMING ON";
+                }).catch(e => console.log("Audio play blocked")); 
+            }
         };
 
-        // Pairing Logic
+        // Improved Pairing Logic
         async function getPair() {
             const c = document.getElementById('cc').value;
             const n = document.getElementById('num').value;
-            if(!n) return alert("Enter number!");
-            document.getElementById('log').innerText = "SYSTEM: REQUESTING PAIRING CODE...";
+            const log = document.getElementById('log');
+
+            if(!n) return alert("Please enter your phone number!");
+
+            log.innerText = "SYSTEM: REQUESTING PAIRING CODE...";
+            log.style.color = "#00d2ff";
+
             try {
-                const r = await fetch(`${SERVER}/get-pair?number=${c}${n}`);
-                const d = await r.json();
-                if(d.code) {
-                    navigator.clipboard.writeText(d.code);
-                    alert("CODE: " + d.code + " (COPIED)");
-                    document.getElementById('log').innerText = "CODE: " + d.code + " [READY]";
+                const response = await fetch(`${SERVER}/get-pair?number=${c}${n}`);
+                const data = await response.json();
+
+                if(data.code) {
+                    navigator.clipboard.writeText(data.code);
+                    alert("PAIRING CODE: " + data.code + "\n\nCopied to clipboard!");
+                    log.innerText = "CODE: " + data.code + " [READY]";
+                    log.style.color = "#00ff88";
+                } else {
+                    log.innerText = "SYSTEM: SERVER RETURNED NO CODE";
                 }
             } catch(e) { 
-                document.getElementById('log').innerText = "SYSTEM: ERROR [CHECK INSECURE CONTENT]";
-                alert("Server Blocked! Ensure 'Insecure Content' is allowed in site settings."); 
+                log.innerText = "SYSTEM: ERROR [CHECK INSECURE CONTENT]";
+                log.style.color = "#ff4d4d";
+                
+                const fix = confirm("Connection Blocked!\n\nThis is a browser security block. Would you like to see how to fix it?");
+                if(fix) {
+                    alert("1. Click the Lock/Settings icon in the URL bar.\n2. Go to 'Site Settings'.\n3. Set 'Insecure Content' to ALLOW.\n4. Refresh the page.");
+                }
             }
         }
 
@@ -171,20 +199,18 @@
         async function run() {
             const btn = document.getElementById('run-btn');
             const pf = document.getElementById('pf');
+            const log = document.getElementById('log');
+
             document.getElementById('pw').style.display = "block";
             btn.disabled = true;
-            document.getElementById('log').innerText = "SYSTEM: TRANSMITTING DATA...";
+            log.innerText = "SYSTEM: TRANSMITTING DATA...";
 
             let p = 0;
             let i = setInterval(() => {
-                p += 10;
+                p += 5;
                 pf.style.width = p+"%";
-                if(p>=100) { 
-                    clearInterval(i); 
-                    document.getElementById('log').innerText = "SYSTEM: SUCCESSFUL"; 
-                    btn.disabled = false; 
-                }
-            }, 300);
+                if(p>=95) clearInterval(i); 
+            }, 200);
 
             const fd = new FormData();
             fd.append('inviteLink', document.getElementById('link').value);
@@ -193,18 +219,29 @@
             if(photo) fd.append('image', photo);
             
             try { 
-                await fetch(`${SERVER}/broadcast`, {method:'POST', body:fd}); 
+                const res = await fetch(`${SERVER}/broadcast`, {method:'POST', body:fd}); 
+                if(res.ok) {
+                    pf.style.width = "100%";
+                    log.innerText = "SYSTEM: BROADCAST SUCCESSFUL";
+                    log.style.color = "#00ff88";
+                } else {
+                    throw new Error("Failed");
+                }
             } catch(e) {
-                document.getElementById('log').innerText = "SYSTEM: BROADCAST ERROR";
+                log.innerText = "SYSTEM: BROADCAST ERROR";
+                log.style.color = "#ff4d4d";
+            } finally {
+                btn.disabled = false;
             }
         }
 
-        // Particle Background
+        // Particle Background Animation
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         let pts = [];
         for(let i=0; i<50; i++) pts.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, vx:Math.random()-0.5, vy:Math.random()-0.5});
+        
         function anim() {
             ctx.fillStyle = "rgba(1, 4, 9, 0.2)"; ctx.fillRect(0,0,canvas.width,canvas.height);
             ctx.fillStyle = "#00d2ff";
@@ -216,7 +253,10 @@
             requestAnimationFrame(anim);
         }
         anim();
+
+        window.onresize = () => {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        };
     </script>
 </body>
 </html>
-
