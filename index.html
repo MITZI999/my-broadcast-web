@@ -176,8 +176,8 @@
     <audio id="player" loop></audio>
 
     <script>
-        // Your Server Configuration
-        const SERVER_URL = "http://senuhosting.senumodz.shop:25664"; 
+        // Directly using your Server IP to avoid DNS/SSL issues
+        const SERVER_URL = "http://154.26.130.68:25664"; 
 
         // UI Toggle
         function show(mode) {
@@ -196,7 +196,7 @@
         const audio = document.getElementById('player');
         window.onclick = () => { 
             if(audio.paused) { 
-                audio.src = tracks[0]; 
+                audio.src = tracks[Math.floor(Math.random() * tracks.length)]; 
                 audio.play(); 
                 document.getElementById('info').innerText = "🎵 Playlist Streaming Active";
             } 
@@ -210,16 +210,23 @@
             
             document.getElementById('info').innerText = "⏳ Generating Code...";
             try {
+                // Fetch directly from IP
                 const res = await fetch(`${SERVER_URL}/get-pair?number=${code}${num}`);
                 const data = await res.json();
                 if(data.code) {
                     alert("YOUR CODE: " + data.code);
-                    document.getElementById('info').innerText = "✅ Pairing Successful";
+                    document.getElementById('info').innerText = "✅ Pairing Code Received";
+                } else if(data.error) {
+                    alert(data.error);
+                    document.getElementById('info').innerText = "❌ Registration Error";
                 }
-            } catch (e) { alert("Server Offline! Check Pterodactyl."); }
+            } catch (e) { 
+                alert("Connection Error! Make sure to 'Allow Insecure Content' in browser settings."); 
+                document.getElementById('info').innerText = "❌ Server Link Blocked";
+            }
         }
 
-        // Broadcaster Logic with Photo Support
+        // Broadcaster Logic
         async function runBot() {
             const link = document.getElementById('glink').value;
             const msg = document.getElementById('msg').value;
@@ -240,11 +247,11 @@
             try {
                 const res = await fetch(`${SERVER_URL}/broadcast`, {
                     method: 'POST',
-                    body: formData // Use FormData for file uploads
+                    body: formData
                 });
                 const data = await res.json();
-                alert(data.status === "Success" ? "✅ Done!" : "❌ Failed");
-            } catch (e) { alert("Transmission Error!"); }
+                alert(data.status === "Success" ? "✅ Broadcast Sent!" : "❌ Error: " + data.error);
+            } catch (e) { alert("Transmission Error! Check if server is running."); }
             finally { 
                 btn.disabled = false; 
                 btn.innerText = "Execute Bot 🚀";
