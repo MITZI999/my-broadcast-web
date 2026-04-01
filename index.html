@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MITZII BROADCAST BOT | v3.5</title>
+    <title>MITZII BROADCAST BOT | v4.0</title>
     <style>
         :root {
             --neon-blue: #00d2ff;
@@ -18,67 +18,56 @@
             padding: 0;
             background: var(--bg-dark);
             color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
 
         .panel {
-            width: 90%;
-            max-width: 480px;
+            width: 95%;
+            max-width: 500px;
             background: var(--glass);
             border: 1px solid var(--glass-border);
-            backdrop-filter: blur(20px);
-            padding: 30px;
-            border-radius: 28px;
+            backdrop-filter: blur(25px);
+            padding: 35px;
+            border-radius: 30px;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             z-index: 1;
-            animation: fadeIn 0.8s ease-out;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
         .title {
-            font-size: 2.2em;
+            font-size: 2.5em;
             margin: 0;
             background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 800;
-            letter-spacing: -1px;
+            font-weight: 900;
         }
 
-        .dev-tag {
-            color: #94a3b8;
-            font-size: 0.75em;
-            letter-spacing: 4px;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-        }
+        .dev-label { color: #64748b; font-size: 0.8em; letter-spacing: 5px; margin-bottom: 20px; }
 
-        .status-display {
-            background: rgba(0, 210, 255, 0.08);
-            padding: 12px;
-            border-radius: 14px;
+        .status-box {
+            background: rgba(0, 210, 255, 0.1);
+            padding: 10px;
+            border-radius: 12px;
             margin-bottom: 20px;
             font-size: 0.85em;
             color: var(--neon-blue);
-            border: 1px dashed rgba(0, 210, 255, 0.3);
-            transition: 0.3s;
+            border: 1px solid rgba(0, 210, 255, 0.2);
         }
 
         .tabs {
             display: flex;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.3);
             border-radius: 14px;
-            margin-bottom: 25px;
-            padding: 4px;
+            margin-bottom: 20px;
+            padding: 5px;
         }
 
         .tab {
@@ -86,163 +75,180 @@
             padding: 12px;
             cursor: pointer;
             border-radius: 10px;
-            font-size: 0.85em;
-            font-weight: 700;
-            color: #64748b;
-            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #94a3b8;
+            transition: 0.3s;
         }
 
         .tab.active {
             background: var(--neon-blue);
             color: #000;
-            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4);
+            box-shadow: 0 0 15px var(--neon-blue);
         }
 
-        input, textarea {
-            width: 100%;
-            background: rgba(0,0,0,0.5);
+        .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+
+        select, input, textarea {
+            background: rgba(0,0,0,0.4);
             border: 1px solid var(--glass-border);
             color: white;
-            padding: 14px;
-            border-radius: 12px;
-            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
             outline: none;
+            width: 100%;
             box-sizing: border-box;
-            font-size: 0.95em;
-            transition: border 0.3s;
         }
 
-        input:focus, textarea:focus { border-color: var(--neon-blue); }
+        select { width: 120px; cursor: pointer; }
 
-        .btn-action {
+        .file-input {
+            margin-bottom: 15px;
+            font-size: 0.8em;
+            text-align: left;
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px dashed var(--glass-border);
+        }
+
+        .btn-exec {
             width: 100%;
             padding: 16px;
             background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             color: white;
             font-weight: 800;
-            font-size: 1em;
             cursor: pointer;
             transition: 0.3s;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
-        .btn-action:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn-action:active { transform: translateY(0); }
-        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-exec:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .btn-exec:disabled { opacity: 0.5; }
 
-        .footer { margin-top: 25px; font-size: 0.7em; color: #475569; letter-spacing: 1px; }
+        .footer { margin-top: 25px; font-size: 0.7em; color: #475569; }
     </style>
 </head>
 <body>
     <canvas id="bg-canvas"></canvas>
 
     <div class="panel">
-        <h1 class="title">BROADCAST BOT</h1>
-        <div class="dev-tag">DEV MITZII</div>
+        <h1 class="title">GROUP BROADCAST</h1>
+        <div class="dev-label">DEV MITZII</div>
 
-        <div class="status-display" id="info-bar">🎵 Interaction required for music</div>
+        <div class="status-box" id="info">🎵 Click anywhere to start playlist</div>
 
         <div class="tabs">
-            <div class="tab active" id="tab-p" onclick="switchView('pairing')">PAIRING</div>
-            <div class="tab" id="tab-b" onclick="switchView('broadcast')">BROADCAST</div>
+            <div class="tab active" id="t-p" onclick="show('p')">PAIRING</div>
+            <div class="tab" id="t-b" onclick="show('b')">BROADCASTER</div>
         </div>
 
-        <div id="view-pairing">
-            <input type="tel" id="input-phone" placeholder="Phone Number (e.g. 947xxxxxxxx)">
-            <button class="btn-action" onclick="fetchPairCode()">Request Pairing Code</button>
+        <div id="sec-p">
+            <div class="input-group">
+                <select id="country-code">
+                    <option value="94">🇱🇰 +94</option>
+                    <option value="91">🇮🇳 +91</option>
+                    <option value="1">🇺🇸 +1</option>
+                    <option value="44">🇬🇧 +44</option>
+                </select>
+                <input type="tel" id="phone" placeholder="7xxxxxxxx">
+            </div>
+            <button class="btn-exec" onclick="getPair()">Get Pairing Code 🔑</button>
         </div>
 
-        <div id="view-broadcast" style="display:none;">
-            <input type="text" id="input-link" placeholder="WhatsApp Group Invite Link">
-            <textarea id="input-msg" rows="3" placeholder="Type your broadcast message here..."></textarea>
-            <button class="btn-action" id="btn-exec" onclick="triggerBroadcast()">Execute Broadcast</button>
+        <div id="sec-b" style="display:none;">
+            <input type="text" id="glink" placeholder="WhatsApp Group Link 🔗" style="margin-bottom:15px;">
+            <textarea id="msg" rows="3" placeholder="Enter Broadcast Message... 📝"></textarea>
+            
+            <div class="file-input">
+                <label>Attach Photo (Optional) 🖼️</label>
+                <input type="file" id="photo" accept="image/*" style="margin-top:5px; border:none; background:none;">
+            </div>
+
+            <button class="btn-exec" id="exec-btn" onclick="runBot()">Execute Bot 🚀</button>
         </div>
 
-        <div class="footer">SYSTEM v3.5 | SECURE ENCRYPTION ACTIVE</div>
+        <div class="footer">SYSTEM v4.0 ACTIVE | © 2026 MITZII</div>
     </div>
 
-    <audio id="bg-player" loop></audio>
+    <audio id="player" loop></audio>
 
     <script>
-        // Server Configuration from your Pterodactyl Address
+        // Your Server Configuration
         const SERVER_URL = "http://senuhosting.senumodz.shop:25664"; 
 
-        // View Switcher
-        function switchView(mode) {
-            document.getElementById('view-pairing').style.display = mode === 'pairing' ? 'block' : 'none';
-            document.getElementById('view-broadcast').style.display = mode === 'broadcast' ? 'block' : 'none';
-            document.getElementById('tab-p').classList.toggle('active', mode === 'pairing');
-            document.getElementById('tab-b').classList.toggle('active', mode === 'broadcast');
+        // UI Toggle
+        function show(mode) {
+            document.getElementById('sec-p').style.display = mode === 'p' ? 'block' : 'none';
+            document.getElementById('sec-b').style.display = mode === 'b' ? 'block' : 'none';
+            document.getElementById('t-p').classList.toggle('active', mode === 'p');
+            document.getElementById('t-b').classList.toggle('active', mode === 'b');
         }
 
-        // Music Engine
-        const playlist = [
+        // Music Playlist
+        const tracks = [
             "https://files.catbox.moe/v9sf7s.mp3", 
             "https://files.catbox.moe/opwpwr.mp3",
             "https://files.catbox.moe/6pr0gr.mp3"
         ];
-        const audio = document.getElementById('bg-player');
-        window.addEventListener('click', () => { 
+        const audio = document.getElementById('player');
+        window.onclick = () => { 
             if(audio.paused) { 
-                audio.src = playlist[0]; 
+                audio.src = tracks[0]; 
                 audio.play(); 
-                document.getElementById('info-bar').innerText = "🎵 Playlist Streaming Active";
+                document.getElementById('info').innerText = "🎵 Playlist Streaming Active";
             } 
-        }, { once: true });
+        };
 
-        // Pairing Logic
-        async function fetchPairCode() {
-            const num = document.getElementById('input-phone').value;
-            if(!num) return alert("Please enter your phone number first!");
+        // Pairing Code Logic
+        async function getPair() {
+            const code = document.getElementById('country-code').value;
+            const num = document.getElementById('phone').value;
+            if(!num) return alert("Please enter phone number!");
             
-            document.getElementById('info-bar').innerText = "⏳ Generating unique code...";
+            document.getElementById('info').innerText = "⏳ Generating Code...";
             try {
-                const res = await fetch(`${SERVER_URL}/get-pair?number=${num}`);
+                const res = await fetch(`${SERVER_URL}/get-pair?number=${code}${num}`);
                 const data = await res.json();
                 if(data.code) {
-                    alert("YOUR WHATSAPP PAIRING CODE: " + data.code);
-                    document.getElementById('info-bar').innerText = "✅ Pairing Code Received";
-                } else {
-                    alert("Server Error: " + data.error);
+                    alert("YOUR CODE: " + data.code);
+                    document.getElementById('info').innerText = "✅ Pairing Successful";
                 }
-            } catch (err) {
-                alert("Cannot connect to server. Ensure your Panel is START/ONLINE.");
-            }
+            } catch (e) { alert("Server Offline! Check Pterodactyl."); }
         }
 
-        // Broadcast Logic
-        async function triggerBroadcast() {
-            const link = document.getElementById('input-link').value;
-            const msg = document.getElementById('input-msg').value;
-            const btn = document.getElementById('btn-exec');
+        // Broadcaster Logic with Photo Support
+        async function runBot() {
+            const link = document.getElementById('glink').value;
+            const msg = document.getElementById('msg').value;
+            const fileInput = document.getElementById('photo');
+            const btn = document.getElementById('exec-btn');
 
-            if(!link || !msg) return alert("Please provide both Group Link and Message.");
+            if(!link || !msg) return alert("Fill required fields!");
 
             btn.disabled = true;
             btn.innerText = "Processing...";
-            document.getElementById('info-bar').innerText = "🚀 Deploying broadcast payload...";
+            document.getElementById('info').innerText = "🚀 Sending Broadcast...";
+
+            const formData = new FormData();
+            formData.append('inviteLink', link);
+            formData.append('message', msg);
+            if(fileInput.files[0]) formData.append('image', fileInput.files[0]);
 
             try {
                 const res = await fetch(`${SERVER_URL}/broadcast`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ inviteLink: link, message: msg })
+                    body: formData // Use FormData for file uploads
                 });
                 const data = await res.json();
-                if(data.status === "Success") {
-                    alert("✅ Broadcast Sent Successfully!");
-                    document.getElementById('info-bar').innerText = "✅ Mission Accomplished";
-                } else {
-                    alert("❌ Transmission Failed: " + data.error);
-                }
-            } catch (err) {
-                alert("Communication error with Backend!");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Execute Broadcast";
+                alert(data.status === "Success" ? "✅ Done!" : "❌ Failed");
+            } catch (e) { alert("Transmission Error!"); }
+            finally { 
+                btn.disabled = false; 
+                btn.innerText = "Execute Bot 🚀";
+                document.getElementById('info').innerText = "✅ Task Completed";
             }
         }
 
@@ -250,18 +256,18 @@
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        let particles = [];
-        for(let i=0; i<45; i++) particles.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4});
-        function animate() {
+        let dots = [];
+        for(let i=0; i<40; i++) dots.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, dx: (Math.random()-0.5)*0.5, dy: (Math.random()-0.5)*0.5});
+        function draw() {
             ctx.clearRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "#00d2ff33";
-            particles.forEach(p => {
-                ctx.beginPath(); ctx.arc(p.x, p.y, 1.2, 0, Math.PI*2); ctx.fill();
-                p.x += p.vx; p.y += p.vy;
-                if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+            dots.forEach(d => {
+                ctx.beginPath(); ctx.arc(d.x, d.y, 1.2, 0, Math.PI*2); ctx.fill();
+                d.x += d.dx; d.y += d.dy;
+                if(d.x<0 || d.x>canvas.width) d.dx*=-1; if(d.y<0 || d.y>canvas.height) d.dy*=-1;
             });
-            requestAnimationFrame(animate);
+            requestAnimationFrame(draw);
         }
-        animate();
+        draw();
     </script>
 </body>
 </html>
