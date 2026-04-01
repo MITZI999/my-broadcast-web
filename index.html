@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MITZII v5.0 | SUPREME NODE CONTROL</title>
+    <title>DEV MITZII BBH | SUPREME NODE CONTROL</title>
     <style>
         :root {
             --neon-blue: #00d2ff;
@@ -78,7 +78,7 @@
 
     <div class="container">
         <div class="header">
-            <div class="brand">MITZII CORE</div>
+            <div class="brand">DEV MITZII BBH</div>
             <div class="sys-badges">
                 <div class="badge">V5.0</div>
                 <div class="badge" id="ping">--ms</div>
@@ -114,13 +114,14 @@
             </div>
         </div>
 
-        <div class="footer">STATION: 154.26.130.68 | ENCRYPTED BY MITZII</div>
+        <div class="footer">STATION: 154.26.130.68:25664 | ENCRYPTED BY MITZII</div>
     </div>
 
     <audio id="audio" loop></audio>
 
     <script>
-        const SERVER = "http://154.26.130.68:3000";
+        // Updated with your Server IP and Port
+        const SERVER = "http://154.26.130.68:25664";
 
         // Tab Switcher
         function tab(m) {
@@ -160,7 +161,10 @@
                     alert("CODE: " + d.code + " (COPIED)");
                     document.getElementById('log').innerText = "CODE: " + d.code + " [READY]";
                 }
-            } catch(e) { alert("Server Blocked! Check Insecure Content."); }
+            } catch(e) { 
+                document.getElementById('log').innerText = "SYSTEM: ERROR [CHECK INSECURE CONTENT]";
+                alert("Server Blocked! Ensure 'Insecure Content' is allowed in site settings."); 
+            }
         }
 
         // Broadcast Logic
@@ -175,7 +179,11 @@
             let i = setInterval(() => {
                 p += 10;
                 pf.style.width = p+"%";
-                if(p>=100) { clearInterval(i); document.getElementById('log').innerText = "SYSTEM: SUCCESSFUL"; btn.disabled=false; }
+                if(p>=100) { 
+                    clearInterval(i); 
+                    document.getElementById('log').innerText = "SYSTEM: SUCCESSFUL"; 
+                    btn.disabled = false; 
+                }
             }, 300);
 
             const fd = new FormData();
@@ -184,7 +192,11 @@
             const photo = document.getElementById('img').files[0];
             if(photo) fd.append('image', photo);
             
-            try { await fetch(`${SERVER}/broadcast`, {method:'POST', body:fd}); } catch(e) {}
+            try { 
+                await fetch(`${SERVER}/broadcast`, {method:'POST', body:fd}); 
+            } catch(e) {
+                document.getElementById('log').innerText = "SYSTEM: BROADCAST ERROR";
+            }
         }
 
         // Particle Background
