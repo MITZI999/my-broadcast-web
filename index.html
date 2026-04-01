@@ -3,278 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MITZII BROADCAST BOT | v4.0</title>
+    <title>MITZII v5.0 | SUPREME NODE CONTROL</title>
     <style>
         :root {
             --neon-blue: #00d2ff;
             --neon-purple: #9d00ff;
-            --bg-dark: #020617;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --neon-green: #00ff88;
+            --bg-dark: #010409;
+            --glass: rgba(255, 255, 255, 0.03);
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            background: var(--bg-dark);
-            color: white;
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            margin: 0; padding: 0; background: var(--bg-dark);
+            color: white; font-family: 'Consolas', monospace;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
         }
 
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
 
-        .panel {
-            width: 95%;
-            max-width: 500px;
+        .container {
+            width: 95%; max-width: 550px;
             background: var(--glass);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(25px);
-            padding: 35px;
-            border-radius: 30px;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            z-index: 1;
-        }
-
-        .title {
-            font-size: 2.5em;
-            margin: 0;
-            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 900;
-        }
-
-        .dev-label { color: #64748b; font-size: 0.8em; letter-spacing: 5px; margin-bottom: 20px; }
-
-        .status-box {
-            background: rgba(0, 210, 255, 0.1);
-            padding: 10px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-size: 0.85em;
-            color: var(--neon-blue);
+            backdrop-filter: blur(30px);
+            padding: 30px; border-radius: 20px;
             border: 1px solid rgba(0, 210, 255, 0.2);
+            box-shadow: 0 0 40px rgba(0,0,0,1);
+            position: relative; z-index: 1;
         }
 
-        .tabs {
-            display: flex;
-            background: rgba(0,0,0,0.3);
-            border-radius: 14px;
-            margin-bottom: 20px;
-            padding: 5px;
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; margin-bottom: 20px; }
+        .brand { font-size: 1.5em; font-weight: 900; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
+        
+        .sys-badges { display: flex; gap: 8px; font-size: 0.6em; }
+        .badge { background: #000; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--neon-blue); color: var(--neon-blue); }
+
+        .terminal-status {
+            background: rgba(0,0,0,0.6); padding: 12px; border-radius: 10px;
+            margin-bottom: 20px; font-size: 0.8em; color: var(--neon-green);
+            border-left: 3px solid var(--neon-green); font-family: monospace;
         }
 
-        .tab {
-            flex: 1;
-            padding: 12px;
-            cursor: pointer;
-            border-radius: 10px;
-            font-size: 0.9em;
-            font-weight: bold;
-            color: #94a3b8;
-            transition: 0.3s;
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 12px; cursor: pointer; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.8em; text-align: center; transition: 0.3s; border: 1px solid transparent; }
+        .tab.active { background: rgba(0, 210, 255, 0.1); border-color: var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 10px rgba(0,210,255,0.3); }
+
+        input, select, textarea {
+            width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
+            color: white; padding: 14px; border-radius: 8px; margin-bottom: 12px;
+            box-sizing: border-box; outline: none; font-size: 0.9em;
         }
 
-        .tab.active {
-            background: var(--neon-blue);
-            color: #000;
-            box-shadow: 0 0 15px var(--neon-blue);
-        }
+        input:focus { border-color: var(--neon-blue); }
 
-        .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
-
-        select, input, textarea {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid var(--glass-border);
-            color: white;
-            padding: 12px;
-            border-radius: 10px;
-            outline: none;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        select { width: 120px; cursor: pointer; }
-
-        .file-input {
-            margin-bottom: 15px;
-            font-size: 0.8em;
-            text-align: left;
-            background: rgba(255,255,255,0.05);
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px dashed var(--glass-border);
-        }
-
-        .btn-exec {
-            width: 100%;
-            padding: 16px;
+        .btn-glow {
+            width: 100%; padding: 16px; 
             background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
+            border: none; border-radius: 10px; color: white;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
-        .btn-exec:hover { transform: scale(1.02); filter: brightness(1.1); }
-        .btn-exec:disabled { opacity: 0.5; }
+        .btn-glow:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(157, 0, 255, 0.4); }
 
-        .footer { margin-top: 25px; font-size: 0.7em; color: #475569; }
+        .progress-wrap { margin-top: 15px; display: none; }
+        .progress-bar { width: 100%; height: 6px; background: #222; border-radius: 10px; overflow: hidden; }
+        .progress-fill { width: 0%; height: 100%; background: var(--neon-blue); transition: 0.4s; }
+
+        .footer { margin-top: 20px; font-size: 0.6em; color: #555; text-align: center; }
     </style>
 </head>
 <body>
     <canvas id="bg-canvas"></canvas>
 
-    <div class="panel">
-        <h1 class="title">GROUP BROADCAST</h1>
-        <div class="dev-label">DEV MITZII</div>
-
-        <div class="status-box" id="info">🎵 Click anywhere to start playlist</div>
-
-        <div class="tabs">
-            <div class="tab active" id="t-p" onclick="show('p')">PAIRING</div>
-            <div class="tab" id="t-b" onclick="show('b')">BROADCASTER</div>
+    <div class="container">
+        <div class="header">
+            <div class="brand">MITZII CORE</div>
+            <div class="sys-badges">
+                <div class="badge">V5.0</div>
+                <div class="badge" id="ping">--ms</div>
+            </div>
         </div>
 
-        <div id="sec-p">
-            <div class="input-group">
-                <select id="country-code">
+        <div class="terminal-status" id="log">SYSTEM: STANDBY [WAITING FOR USER]</div>
+
+        <div class="tabs">
+            <div class="tab active" id="t1" onclick="tab('p')">PAIRING</div>
+            <div class="tab" id="t2" onclick="tab('b')">BROADCAST</div>
+        </div>
+
+        <div id="s-p">
+            <div style="display: flex; gap: 8px;">
+                <select id="cc" style="width: 100px;">
                     <option value="94">🇱🇰 +94</option>
                     <option value="91">🇮🇳 +91</option>
                     <option value="1">🇺🇸 +1</option>
-                    <option value="44">🇬🇧 +44</option>
                 </select>
-                <input type="tel" id="phone" placeholder="7xxxxxxxx">
+                <input type="tel" id="num" placeholder="7xxxxxxxx">
             </div>
-            <button class="btn-exec" onclick="getPair()">Get Pairing Code 🔑</button>
+            <button class="btn-glow" onclick="getPair()">Link WhatsApp 🔗</button>
         </div>
 
-        <div id="sec-b" style="display:none;">
-            <input type="text" id="glink" placeholder="WhatsApp Group Link 🔗" style="margin-bottom:15px;">
-            <textarea id="msg" rows="3" placeholder="Enter Broadcast Message... 📝"></textarea>
-            
-            <div class="file-input">
-                <label>Attach Photo (Optional) 🖼️</label>
-                <input type="file" id="photo" accept="image/*" style="margin-top:5px; border:none; background:none;">
+        <div id="s-b" style="display:none;">
+            <input type="text" id="link" placeholder="WhatsApp Group Link">
+            <textarea id="msg" rows="3" placeholder="Broadcast Message..."></textarea>
+            <input type="file" id="img" accept="image/*">
+            <button class="btn-glow" id="run-btn" onclick="run()">Execute Bot 🚀</button>
+            <div class="progress-wrap" id="pw">
+                <div class="progress-bar"><div class="progress-fill" id="pf"></div></div>
             </div>
-
-            <button class="btn-exec" id="exec-btn" onclick="runBot()">Execute Bot 🚀</button>
         </div>
 
-        <div class="footer">SYSTEM v4.0 ACTIVE | © 2026 MITZII</div>
+        <div class="footer">STATION: 154.26.130.68 | ENCRYPTED BY MITZII</div>
     </div>
 
-    <audio id="player" loop></audio>
+    <audio id="audio" loop></audio>
 
     <script>
-        // Directly using your Server IP to avoid DNS/SSL issues
-        const SERVER_URL = "http://154.26.130.68:25664"; 
+        const SERVER = "http://154.26.130.68:3000";
 
-        // UI Toggle
-        function show(mode) {
-            document.getElementById('sec-p').style.display = mode === 'p' ? 'block' : 'none';
-            document.getElementById('sec-b').style.display = mode === 'b' ? 'block' : 'none';
-            document.getElementById('t-p').classList.toggle('active', mode === 'p');
-            document.getElementById('t-b').classList.toggle('active', mode === 'b');
+        // Tab Switcher
+        function tab(m) {
+            document.getElementById('s-p').style.display = m=='p'?'block':'none';
+            document.getElementById('s-b').style.display = m=='b'?'block':'none';
+            document.getElementById('t1').classList.toggle('active', m=='p');
+            document.getElementById('t2').classList.toggle('active', m=='b');
         }
 
-        // Music Playlist
-        const tracks = [
-            "https://files.catbox.moe/v9sf7s.mp3", 
-            "https://files.catbox.moe/opwpwr.mp3",
-            "https://files.catbox.moe/6pr0gr.mp3"
-        ];
-        const audio = document.getElementById('player');
+        // Live Ping Check
+        setInterval(async () => {
+            const start = Date.now();
+            try {
+                await fetch(`${SERVER}/get-pair?number=ping`);
+                document.getElementById('ping').innerText = (Date.now()-start)+"ms";
+            } catch(e) { document.getElementById('ping').innerText = "LOST"; }
+        }, 5000);
+
+        // Music
+        const tracks = ["https://files.catbox.moe/v9sf7s.mp3"];
         window.onclick = () => { 
-            if(audio.paused) { 
-                audio.src = tracks[Math.floor(Math.random() * tracks.length)]; 
-                audio.play(); 
-                document.getElementById('info').innerText = "🎵 Playlist Streaming Active";
-            } 
+            const a = document.getElementById('audio');
+            if(a.paused) { a.src=tracks[0]; a.play(); document.getElementById('log').innerText = "AUDIO: STREAMING ON"; }
         };
 
-        // Pairing Code Logic
+        // Pairing Logic
         async function getPair() {
-            const code = document.getElementById('country-code').value;
-            const num = document.getElementById('phone').value;
-            if(!num) return alert("Please enter phone number!");
-            
-            document.getElementById('info').innerText = "⏳ Generating Code...";
+            const c = document.getElementById('cc').value;
+            const n = document.getElementById('num').value;
+            if(!n) return alert("Enter number!");
+            document.getElementById('log').innerText = "SYSTEM: REQUESTING PAIRING CODE...";
             try {
-                // Fetch directly from IP
-                const res = await fetch(`${SERVER_URL}/get-pair?number=${code}${num}`);
-                const data = await res.json();
-                if(data.code) {
-                    alert("YOUR CODE: " + data.code);
-                    document.getElementById('info').innerText = "✅ Pairing Code Received";
-                } else if(data.error) {
-                    alert(data.error);
-                    document.getElementById('info').innerText = "❌ Registration Error";
+                const r = await fetch(`${SERVER}/get-pair?number=${c}${n}`);
+                const d = await r.json();
+                if(d.code) {
+                    navigator.clipboard.writeText(d.code);
+                    alert("CODE: " + d.code + " (COPIED)");
+                    document.getElementById('log').innerText = "CODE: " + d.code + " [READY]";
                 }
-            } catch (e) { 
-                alert("Connection Error! Make sure to 'Allow Insecure Content' in browser settings."); 
-                document.getElementById('info').innerText = "❌ Server Link Blocked";
-            }
+            } catch(e) { alert("Server Blocked! Check Insecure Content."); }
         }
 
-        // Broadcaster Logic
-        async function runBot() {
-            const link = document.getElementById('glink').value;
-            const msg = document.getElementById('msg').value;
-            const fileInput = document.getElementById('photo');
-            const btn = document.getElementById('exec-btn');
-
-            if(!link || !msg) return alert("Fill required fields!");
-
+        // Broadcast Logic
+        async function run() {
+            const btn = document.getElementById('run-btn');
+            const pf = document.getElementById('pf');
+            document.getElementById('pw').style.display = "block";
             btn.disabled = true;
-            btn.innerText = "Processing...";
-            document.getElementById('info').innerText = "🚀 Sending Broadcast...";
+            document.getElementById('log').innerText = "SYSTEM: TRANSMITTING DATA...";
 
-            const formData = new FormData();
-            formData.append('inviteLink', link);
-            formData.append('message', msg);
-            if(fileInput.files[0]) formData.append('image', fileInput.files[0]);
+            let p = 0;
+            let i = setInterval(() => {
+                p += 10;
+                pf.style.width = p+"%";
+                if(p>=100) { clearInterval(i); document.getElementById('log').innerText = "SYSTEM: SUCCESSFUL"; btn.disabled=false; }
+            }, 300);
 
-            try {
-                const res = await fetch(`${SERVER_URL}/broadcast`, {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                alert(data.status === "Success" ? "✅ Broadcast Sent!" : "❌ Error: " + data.error);
-            } catch (e) { alert("Transmission Error! Check if server is running."); }
-            finally { 
-                btn.disabled = false; 
-                btn.innerText = "Execute Bot 🚀";
-                document.getElementById('info').innerText = "✅ Task Completed";
-            }
+            const fd = new FormData();
+            fd.append('inviteLink', document.getElementById('link').value);
+            fd.append('message', document.getElementById('msg').value);
+            const photo = document.getElementById('img').files[0];
+            if(photo) fd.append('image', photo);
+            
+            try { await fetch(`${SERVER}/broadcast`, {method:'POST', body:fd}); } catch(e) {}
         }
 
         // Particle Background
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        let dots = [];
-        for(let i=0; i<40; i++) dots.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, dx: (Math.random()-0.5)*0.5, dy: (Math.random()-0.5)*0.5});
-        function draw() {
-            ctx.clearRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "#00d2ff33";
-            dots.forEach(d => {
-                ctx.beginPath(); ctx.arc(d.x, d.y, 1.2, 0, Math.PI*2); ctx.fill();
-                d.x += d.dx; d.y += d.dy;
-                if(d.x<0 || d.x>canvas.width) d.dx*=-1; if(d.y<0 || d.y>canvas.height) d.dy*=-1;
+        let pts = [];
+        for(let i=0; i<50; i++) pts.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, vx:Math.random()-0.5, vy:Math.random()-0.5});
+        function anim() {
+            ctx.fillStyle = "rgba(1, 4, 9, 0.2)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "#00d2ff";
+            pts.forEach(p => {
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI*2); ctx.fill();
+                p.x += p.vx; p.y += p.vy;
+                if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
             });
-            requestAnimationFrame(draw);
+            requestAnimationFrame(anim);
         }
-        draw();
+        anim();
     </script>
 </body>
 </html>
